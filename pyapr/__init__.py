@@ -33,6 +33,8 @@ utils
     Utility functions for handling files and data types of APR classes.
 viewer
     Visualization methods for APR images, e.g. slice viewer and raycast rendering.
+graph
+    Methods for constructing and handeling graph represention
 """
 
 try:
@@ -53,6 +55,7 @@ from . import transform
 from . import tree
 from . import utils
 from . import viewer
+from . import graph
 
 
 try:

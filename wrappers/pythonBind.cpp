@@ -26,6 +26,8 @@
 #include "reconstruction/src/BindReconstruction.hpp"
 #include "restoration/src/BindRichardsonLucy.hpp"
 #include "segmentation/src/BindGraphCut.hpp"
+#include "graph/src/BindConstructGraph.hpp"
+#include "graph/src/BindPlaceAggregates.hpp"
 #include "transform/src/BindProjection.hpp"
 #include "tree/src/BindFillTree.hpp"
 
@@ -99,6 +101,10 @@ PYBIND11_MODULE(APR_PYTHON_MODULE_NAME, m) {
 
     py::module io = m.def_submodule("io");
     AddAPRFile(io, "APRFile");
+
+    py::module graph = m.def_submodule("graph");
+    AddConstructGraph(graph);
+    AddPlaceAggregates(graph);
 
 
     py::module measure = m.def_submodule("measure");
