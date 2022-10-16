@@ -38,6 +38,7 @@ def construct_graph(apr: APR,
     
     output_nodes = np.zeros((apr.total_number_particles(), 5))
     output_edges = np.zeros((2*int(apr.total_number_particles()*avg_num_neighbors), 2)).astype('int32')
-    _construct_graph(apr, parts, output_nodes, output_edges)
+    output_edge_features = np.zeros((2*int(apr.total_number_particles()*avg_num_neighbors)))
+    _construct_graph(apr, parts, output_nodes, output_edges, output_edge_features)
 
-    return (output_nodes, output_edges[~np.all(output_edges == 0, axis=1)])
+    return (output_nodes, output_edges[~np.all(output_edges == 0, axis=1)], output_edge_features[~(output_edge_features == 0)])

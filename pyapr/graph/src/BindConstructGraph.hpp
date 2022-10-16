@@ -23,9 +23,10 @@ using namespace py::literals;
 
 
 template<typename inputType, typename S>
-void graph_apr(APR& apr, PyParticleData<inputType>& input_parts, py::array_t<double, py::array::c_style>& node_array, py::array_t<int, py::array::c_style>& edges_array) {
+void graph_apr(APR& apr, PyParticleData<inputType>& input_parts, py::array_t<double, py::array::c_style>& node_array, py::array_t<int, py::array::c_style>& edges_array, py::array_t<double, py::array::c_style>& edge_feature_array) {
 
     auto resNodes = node_array.mutable_unchecked<2>();
+    auto resEdgeFeatures = edge_feature_array.mutable_unchecked<1>();
     auto resEdges = edges_array.mutable_unchecked<2>();
 
     //APRTimer timer(true);
@@ -39,7 +40,7 @@ void graph_apr(APR& apr, PyParticleData<inputType>& input_parts, py::array_t<dou
 
     for(int level = it.level_min(); level <= it.level_max(); ++level) {
 
-        //const float base_dist = it.level_size(level);
+        const float base_dist = it.level_size(level);
 
         for(int z = 0; z < apr.z_num(level); ++z) {
             for(int x = 0; x < apr.x_num(level); ++x) {
@@ -70,12 +71,22 @@ void graph_apr(APR& apr, PyParticleData<inputType>& input_parts, py::array_t<dou
                                     continue;
                                 }
 
+                                const int neigh_level = neighbour_iterator.level();
+                                double particle_dist = base_dist;
+                                if (neigh_level > level) {
+                                    particle_dist *= 0.75f;     // neighbour particle cell is half the size of current cell
+                                } else if (neigh_level < level) {
+                                    particle_dist *= 1.5f;       // neighbour particle cell is twice the size of current cell
+                                }
+
                                 // Add the edge twice since it is bidirectional
                                 resEdges(edge_counter, 0) = ct_id;
                                 resEdges(edge_counter, 1) = neigh_id;
+                                resEdgeFeatures(edge_counter) = particle_dist;
 
                                 resEdges(edge_counter+1, 0) = neigh_id;
                                 resEdges(edge_counter+1, 1) = ct_id;
+                                resEdgeFeatures(edge_counter+1) = particle_dist;
                                 edge_counter+=2;
                             }
                         }
@@ -103,10 +114,10 @@ void graph_apr(APR& apr, PyParticleData<inputType>& input_parts, py::array_t<dou
 template<typename inputType>
 void bindConvertGraph(py::module& m) {
     m.def("construct_graph", &graph_apr<inputType, uint8_t>, "Construct graph from the particle representation",
-          "apr"_a, "input_parts"_a, "node_array"_a, "edge_array"_a);
+          "apr"_a, "input_parts"_a, "node_array"_a, "edge_array"_a, "edge_feature_array"_a);
 
     m.def("construct_graph", &graph_apr<inputType, uint16_t>, "Construct graph from the particle representation",
-          "apr"_a, "input_parts"_a, "node_array"_a, "edge_array"_a);
+          "apr"_a, "input_parts"_a, "node_array"_a, "edge_array"_a, "edge_feature_array"_a);
 }
 
 
